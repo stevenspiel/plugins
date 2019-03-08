@@ -44,8 +44,8 @@ static uint64_t _nextPolygonId = 0;
 - (void)setVisible:(BOOL)visible {
   _polygon.map = visible ? _mapView : nil;
 }
-- (void)setStrokeWidth:(CGFloat)width {
-  _polygon.strokeWidth = width;
+- (void)setStrokeWidth:(CGFloat)strokeWidth {
+  _polygon.strokeWidth = (strokeWidth / 4);
 }
 - (void)setZIndex:(int)zIndex {
   _polygon.zIndex = zIndex;

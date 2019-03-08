@@ -298,6 +298,24 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
   return [marker.userData[1] boolValue];
 }
 
+- (BOOL)mapView:(GMSMapView*)mapView didDragMarker:(GMSMarker*)marker {
+  NSString* markerId = marker.userData[0];
+  [_channel invokeMethod:@"marker#onDrag" arguments:@{@"marker" : markerId, @"latitude" : @(marker.position.latitude), @"longitude": @(marker.position.longitude)}];
+  return [marker.userData[1] boolValue];
+}
+
+- (BOOL)mapView:(GMSMapView*)mapView didBeginDraggingMarker:(GMSMarker*)marker {
+  NSString* markerId = marker.userData[0];
+  [_channel invokeMethod:@"marker#onDragStart" arguments:@{@"marker" : markerId, @"latitude" : @(marker.position.latitude), @"longitude": @(marker.position.longitude)}];
+  return [marker.userData[1] boolValue];
+}
+
+- (BOOL)mapView:(GMSMapView*)mapView didEndDraggingMarker:(GMSMarker*)marker {
+  NSString* markerId = marker.userData[0];
+  [_channel invokeMethod:@"marker#onDragEnd" arguments:@{@"marker" : markerId, @"latitude" : @(marker.position.latitude), @"longitude": @(marker.position.longitude)}];
+  return [marker.userData[1] boolValue];
+}
+
 - (void)mapView:(GMSMapView*)mapView didTapInfoWindowOfMarker:(GMSMarker*)marker {
   NSString* markerId = marker.userData[0];
   [_channel invokeMethod:@"infoWindow#onTap" arguments:@{@"marker" : markerId}];
