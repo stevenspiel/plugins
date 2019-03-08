@@ -5,21 +5,22 @@
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
 
-// Defines polyline UI options writable from Flutter.
-@protocol FLTGoogleMapPolylineOptionsSink
+// Defines polygon UI options writable from Flutter.
+@protocol FLTGoogleMapPolygonOptionsSink
 - (void)setConsumeTapEvents:(BOOL)consume;
 - (void)setPoints:(GMSPath*)points;
 - (void)setClickable:(BOOL)clickable;
-- (void)setColor:(UIColor*)color;
+- (void)setStrokeColor:(UIColor*)color;
+- (void)setFillColor:(UIColor*)color;
 - (void)setGeodesic:(BOOL)geodesic;
 - (void)setPattern:(NSArray<GMSStyleSpan*>*)pattern;
 - (void)setVisible:(BOOL)visible;
-- (void)setWidth:(CGFloat)width;
+- (void)setStrokeWidth:(CGFloat)width;
 - (void)setZIndex:(int)zIndex;
 @end
 
-// Defines polyline controllable by Flutter.
-@interface FLTGoogleMapPolylineController : NSObject <FLTGoogleMapPolylineOptionsSink>
-@property(atomic, readonly) NSString* polylineId;
+// Defines polygon controllable by Flutter.
+@interface FLTGoogleMapPolygonController : NSObject <FLTGoogleMapPolygonOptionsSink>
+@property(atomic, readonly) NSString* polygonId;
 - (instancetype)initWithPath:(GMSPath*)path mapView:(GMSMapView*)mapView;
 @end

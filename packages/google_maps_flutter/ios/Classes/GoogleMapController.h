@@ -6,7 +6,7 @@
 #import <GoogleMaps/GoogleMaps.h>
 #import <UIKit/UIKit.h>
 #import "GoogleMapMarkerController.h"
-#import "GoogleMapPolylineController.h"
+#import "GoogleMapPolygonController.h"
 
 // Defines map UI options writable from Flutter.
 @protocol FLTGoogleMapOptionsSink
@@ -38,9 +38,9 @@
 - (NSString*)addMarkerWithPosition:(CLLocationCoordinate2D)position;
 - (FLTGoogleMapMarkerController*)markerWithId:(NSString*)markerId;
 - (void)removeMarkerWithId:(NSString*)markerId;
-- (NSString*)addPolylineWithPath:(GMSPath*)path;
-- (FLTGoogleMapPolylineController*)polylineWithId:(NSString*)polylineId;
-- (void)removePolylineWithId:(NSString*)polylineId;
+- (NSString*)addPolygonWithPath:(GMSPath*)path;
+- (FLTGoogleMapPolygonController*)polygonWithId:(NSString*)polygonId;
+- (void)removePolygonWithId:(NSString*)polygonId;
 @end
 
 // Allows the engine to create new Google Map instances.

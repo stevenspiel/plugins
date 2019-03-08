@@ -22,7 +22,7 @@ static GMSPath* toPath(id json);
 static void interpretMapOptions(id json, id<FLTGoogleMapOptionsSink> sink);
 static void interpretMarkerOptions(id json, id<FLTGoogleMapMarkerOptionsSink> sink,
                                    NSObject<FlutterPluginRegistrar>* registrar);
-static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink> sink,
+static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> sink,
                                      NSObject<FlutterPluginRegistrar>* registrar);
 
 @implementation FLTGoogleMapFactory {
@@ -55,7 +55,7 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
   GMSMapView* _mapView;
   int64_t _viewId;
   NSMutableDictionary* _markers;
-  NSMutableDictionary* _polylines;
+  NSMutableDictionary* _polygons;
   FlutterMethodChannel* _channel;
   BOOL _trackCameraPosition;
   NSObject<FlutterPluginRegistrar>* _registrar;
@@ -76,7 +76,7 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
     GMSCameraPosition* camera = toOptionalCameraPosition(args[@"initialCameraPosition"]);
     _mapView = [GMSMapView mapWithFrame:frame camera:camera];
     _markers = [NSMutableDictionary dictionaryWithCapacity:1];
-    _polylines = [NSMutableDictionary dictionaryWithCapacity:1];
+    _polygons = [NSMutableDictionary dictionaryWithCapacity:1];
     _trackCameraPosition = NO;
     interpretMapOptions(args[@"options"], self);
     NSString* channelName =
@@ -130,17 +130,17 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
   } else if ([call.method isEqualToString:@"marker#remove"]) {
     [self removeMarkerWithId:call.arguments[@"marker"]];
     result(nil);
-  } else if ([call.method isEqualToString:@"polyline#add"]) {
+  } else if ([call.method isEqualToString:@"polygon#add"]) {
     NSDictionary* options = call.arguments[@"options"];
-    NSString* polylineId = [self addPolylineWithPath:toPath(options[@"points"])];
-    interpretPolylineOptions(options, [self polylineWithId:polylineId], _registrar);
-    result(polylineId);
-  } else if ([call.method isEqualToString:@"polyline#update"]) {
-    interpretPolylineOptions(call.arguments[@"options"],
-                             [self polylineWithId:call.arguments[@"polyline"]], _registrar);
+    NSString* polygonId = [self addPolygonWithPath:toPath(options[@"points"])];
+    interpretPolygonOptions(options, [self polygonWithId:polygonId], _registrar);
+    result(polygonId);
+  } else if ([call.method isEqualToString:@"polygon#update"]) {
+    interpretPolygonOptions(call.arguments[@"options"],
+                             [self polygonWithId:call.arguments[@"polygon"]], _registrar);
     result(nil);
-  } else if ([call.method isEqualToString:@"polyline#remove"]) {
-    [self removePolylineWithId:call.arguments[@"polyline"]];
+  } else if ([call.method isEqualToString:@"polygon#remove"]) {
+    [self removePolygonWithId:call.arguments[@"polygon"]];
     result(nil);
   } else {
     result(FlutterMethodNotImplemented);
@@ -192,22 +192,22 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
   }
 }
 
-- (NSString*)addPolylineWithPath:(GMSPath*)path {
-  FLTGoogleMapPolylineController* polylineController =
-      [[FLTGoogleMapPolylineController alloc] initWithPath:path mapView:_mapView];
-  _polylines[polylineController.polylineId] = polylineController;
-  return polylineController.polylineId;
+- (NSString*)addPolygonWithPath:(GMSPath*)path {
+  FLTGoogleMapPolygonController* polygonController =
+      [[FLTGoogleMapPolygonController alloc] initWithPath:path mapView:_mapView];
+  _polygons[polygonController.polygonId] = polygonController;
+  return polygonController.polygonId;
 }
 
-- (FLTGoogleMapPolylineController*)polylineWithId:(NSString*)polylineId {
-  return _polylines[polylineId];
+- (FLTGoogleMapPolygonController*)polygonWithId:(NSString*)polygonId {
+  return _polygons[polygonId];
 }
 
-- (void)removePolylineWithId:(NSString*)polylineId {
-  FLTGoogleMapPolylineController* polylineController = _polylines[polylineId];
-  if (polylineController) {
-    [polylineController setVisible:NO];
-    [_polylines removeObjectForKey:polylineId];
+- (void)removePolygonWithId:(NSString*)polygonId {
+  FLTGoogleMapPolygonController* polygonController = _polygons[polygonId];
+  if (polygonController) {
+    [polygonController setVisible:NO];
+    [_polygons removeObjectForKey:polygonId];
   }
 }
 
@@ -304,8 +304,8 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
 }
 
 - (void)mapView:(GMSMapView*)mapView didTapOverlay:(GMSOverlay*)overlay {
-  NSString* polylineId = overlay.userData[0];
-  [_channel invokeMethod:@"polyline#onTap" arguments:@{@"polyline" : polylineId}];
+  NSString* polygonId = overlay.userData[0];
+  [_channel invokeMethod:@"polygon#onTap" arguments:@{@"polygon" : polygonId}];
 }
 
 - (void)mapView:(GMSMapView*)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
@@ -567,7 +567,7 @@ static void interpretMarkerOptions(id json, id<FLTGoogleMapMarkerOptionsSink> si
   }
 }
 
-static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink> sink,
+static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> sink,
                                      NSObject<FlutterPluginRegistrar>* registrar) {
   NSDictionary* data = json;
 
@@ -579,17 +579,21 @@ static void interpretPolylineOptions(id json, id<FLTGoogleMapPolylineOptionsSink
   if (clickable) {
     [sink setClickable:toBool(clickable)];
   }
-  id color = data[@"color"];
-  if (color) {
-    [sink setColor:UIColorFromRGB(toInt(color))];
+  id strokeColor = data[@"strokeColor"];
+  if (strokeColor) {
+    [sink setStrokeColor:UIColorFromRGB(toInt(strokeColor))];
+  }
+  id fillColor = data[@"fillColor"];
+  if (fillColor) {
+    [sink setFillColor:UIColorFromRGB(toInt(fillColor))];
   }
   id geodesic = data[@"geodesic"];
   if (geodesic) {
     [sink setGeodesic:toBool(geodesic)];
   }
-  id width = data[@"width"];
-  if (width) {
-    [sink setWidth:(CGFloat)toFloat(width)];
+  id strokeWidth = data[@"strokeWidth"];
+  if (strokeWidth) {
+    [sink setStrokeWidth:(CGFloat)toFloat(strokeWidth)];
   }
   id visible = data[@"visible"];
   if (visible) {
