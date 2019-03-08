@@ -43,9 +43,18 @@ class GoogleMapController extends ChangeNotifier {
   /// Callbacks to receive tap events for markers placed on this map.
   final ArgumentCallbacks<Marker> onMarkerTapped = ArgumentCallbacks<Marker>();
 
+  /// Callbacks to receive drag events for markers on this map.
+  final ArgumentDragCallbacks<Marker, LatLng> onMarkerDrag = ArgumentDragCallbacks<Marker, LatLng>();
+
+  /// Callbacks to receive drag events for markers on this map.
+  final ArgumentDragCallbacks<Marker, LatLng> onMarkerDragStart = ArgumentDragCallbacks<Marker, LatLng>();
+
+  /// Callbacks to receive drag events for markers on this map.
+  final ArgumentDragCallbacks<Marker, LatLng> onMarkerDragEnd = ArgumentDragCallbacks<Marker, LatLng>();
+
   /// Callbacks to receive tap events for markers placed on this map.
-  final ArgumentCallbacks<Polyline> onPolylineTapped =
-      ArgumentCallbacks<Polyline>();
+  final ArgumentCallbacks<Polygon> onPolygonTapped =
+      ArgumentCallbacks<Polygon>();
 
   /// Callbacks to receive tap events for markers placed on this map.
   final ArgumentCallbacks<LatLng> onMapTapped = ArgumentCallbacks<LatLng>();
@@ -69,11 +78,11 @@ class GoogleMapController extends ChangeNotifier {
   Set<Marker> get markers => Set<Marker>.from(_markers.values);
   final Map<String, Marker> _markers = <String, Marker>{};
 
-  /// The current set of polylines on this map.
+  /// The current set of polygons on this map.
   ///
-  /// The returned set will be a detached snapshot of the polylines collection.
-  Set<Polyline> get polylines => Set<Polyline>.from(_polylines.values);
-  final Map<String, Polyline> _polylines = <String, Polyline>{};
+  /// The returned set will be a detached snapshot of the polygons collection.
+  Set<Polygon> get polygons => Set<Polygon>.from(_polygons.values);
+  final Map<String, Polygon> _polygons = <String, Polygon>{};
 
   /// True if the map camera is currently moving.
   bool get isCameraMoving => _isCameraMoving;
@@ -104,11 +113,44 @@ class GoogleMapController extends ChangeNotifier {
         }
         break;
 
-      case 'polyline#onTap':
-        final String polylineId = call.arguments['polyline'];
-        final Polyline polyline = _polylines[polylineId];
-        if (polyline != null) {
-          onPolylineTapped(polyline);
+      case 'marker#onDrag':
+        final String markerId = call.arguments['marker'];
+        final Marker marker = _markers[markerId];
+        final double latitude = call.arguments['latitude'];
+        final double longitude = call.arguments['longitude'];
+        final LatLng latLng = LatLng(latitude, longitude);
+        if (marker != null) {
+          onMarkerDrag(marker, latLng);
+        }
+        break;
+
+      case 'marker#onDragStart':
+        final String markerId = call.arguments['marker'];
+        final Marker marker = _markers[markerId];
+        final double latitude = call.arguments['latitude'];
+        final double longitude = call.arguments['longitude'];
+        final LatLng latLng = LatLng(latitude, longitude);
+        if (marker != null) {
+          onMarkerDragStart(marker, latLng);
+        }
+        break;
+
+      case 'marker#onDragEnd':
+        final String markerId = call.arguments['marker'];
+        final Marker marker = _markers[markerId];
+        final double latitude = call.arguments['latitude'];
+        final double longitude = call.arguments['longitude'];
+        final LatLng latLng = LatLng(latitude, longitude);
+        if (marker != null) {
+          onMarkerDragEnd(marker, latLng);
+        }
+        break;
+
+      case 'polygon#onTap':
+        final String polygonId = call.arguments['polygon'];
+        final Polygon polygon = _polygons[polygonId];
+        if (polygon != null) {
+          onPolygonTapped(polygon);
         }
         break;
 
@@ -233,26 +275,26 @@ class GoogleMapController extends ChangeNotifier {
     return marker;
   }
 
-  /// Adds a polyline to the map, configured using the specified custom [options].
+  /// Adds a polygon to the map, configured using the specified custom [options].
   ///
-  /// Change listeners are notified once the polyline has been added on the
+  /// Change listeners are notified once the polygon has been added on the
   /// platform side.
   ///
-  /// The returned [Future] completes with the added polyline once listeners have
+  /// The returned [Future] completes with the added polygon once listeners have
   /// been notified.
-  Future<Polyline> addPolyline(PolylineOptions options) async {
-    final PolylineOptions effectiveOptions =
-        PolylineOptions.defaultOptions.copyWith(options);
-    final String polylineId = await _channel.invokeMethod(
-      'polyline#add',
+  Future<Polygon> addPolygon(PolygonOptions options) async {
+    final PolygonOptions effectiveOptions =
+        PolygonOptions.defaultOptions.copyWith(options);
+    final String polygonId = await _channel.invokeMethod(
+      'polygon#add',
       <String, dynamic>{
         'options': effectiveOptions._toJson(),
       },
     );
-    final Polyline polyline = Polyline(polylineId, effectiveOptions);
-    _polylines[polylineId] = polyline;
+    final Polygon polygon = Polygon(polygonId, effectiveOptions);
+    _polygons[polygonId] = polygon;
     notifyListeners();
-    return polyline;
+    return polygon;
   }
 
   /// Updates the specified [marker] with the given [changes]. The marker must
@@ -277,26 +319,26 @@ class GoogleMapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates the specified [polyline] with the given [changes]. The polyline must
-  /// be a current member of the [polylines] set.
+  /// Updates the specified [polygon] with the given [changes]. The polygon must
+  /// be a current member of the [polygons] set.
   ///
-  /// Change listeners are notified once the polyline has been updated on the
+  /// Change listeners are notified once the polygon has been updated on the
   /// platform side.
   ///
   /// The returned [Future] completes once listeners have been notified.
-  Future<void> updatePolyline(
-      Polyline polyline, PolylineOptions changes) async {
-    assert(polyline != null);
-    assert(_polylines[polyline._id] == polyline);
+  Future<void> updatePolygon(
+      Polygon polygon, PolygonOptions changes) async {
+    assert(polygon != null);
+    assert(_polygons[polygon._id] == polygon);
     assert(changes != null);
-    changes = polyline._options.copyWith(changes);
+    changes = polygon._options.copyWith(changes);
     // Code copied from updateMarker
     // ignore: strong_mode_implicit_dynamic_method
-    await _channel.invokeMethod('polyline#update', <String, dynamic>{
-      'polyline': polyline._id,
+    await _channel.invokeMethod('polygon#update', <String, dynamic>{
+      'polygon': polygon._id,
       'options': changes._toJson(),
     });
-    polyline._options = polyline._options.copyWith(changes);
+    polygon._options = polygon._options.copyWith(changes);
     notifyListeners();
   }
 
@@ -314,17 +356,17 @@ class GoogleMapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Removes the specified [polyline] from the map. The polylines must be a current
-  /// member of the [polylines] set.
+  /// Removes the specified [polygon] from the map. The polygons must be a current
+  /// member of the [polygons] set.
   ///
-  /// Change listeners are notified once the polyline has been removed on the
+  /// Change listeners are notified once the polygon has been removed on the
   /// platform side.
   ///
   /// The returned [Future] completes once listeners have been notified.
-  Future<void> removePolyline(Polyline polyline) async {
-    assert(polyline != null);
-    assert(_polylines[polyline._id] == polyline);
-    await _removePolyline(polyline._id);
+  Future<void> removePolygon(Polygon polygon) async {
+    assert(polygon != null);
+    assert(_polygons[polygon._id] == polygon);
+    await _removePolygon(polygon._id);
     notifyListeners();
   }
 
@@ -343,17 +385,17 @@ class GoogleMapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Removes all [polylines] from the map.
+  /// Removes all [polygons] from the map.
   ///
-  /// Change listeners are notified once all polylines have been removed on the
+  /// Change listeners are notified once all polygons have been removed on the
   /// platform side.
   ///
   /// The returned [Future] completes once listeners have been notified.
-  Future<void> clearPolylines() async {
-    assert(_polylines != null);
-    final List<String> polylineIds = List<String>.from(_polylines.keys);
-    for (String id in polylineIds) {
-      await _removePolyline(id);
+  Future<void> clearPolygons() async {
+    assert(_polygons != null);
+    final List<String> polygonIds = List<String>.from(_polygons.keys);
+    for (String id in polygonIds) {
+      await _removePolygon(id);
     }
     notifyListeners();
   }
@@ -373,17 +415,17 @@ class GoogleMapController extends ChangeNotifier {
     _markers.remove(id);
   }
 
-  /// Helper method to remove a single polyline from the map. Consumed by
-  /// [removePolyline] and [clearPolylines].
+  /// Helper method to remove a single polygon from the map. Consumed by
+  /// [removePolygon] and [clearPolygons].
   ///
   /// The returned [Future] completes once the marker has been removed from
-  /// [_polylines].
-  Future<void> _removePolyline(String id) async {
+  /// [_polygons].
+  Future<void> _removePolygon(String id) async {
     // Code copied from removeMarker
     // ignore: strong_mode_implicit_dynamic_method
-    await _channel.invokeMethod('polyline#remove', <String, dynamic>{
-      'polyline': id,
+    await _channel.invokeMethod('polygon#remove', <String, dynamic>{
+      'polygon': id,
     });
-    _polylines.remove(id);
+    _polygons.remove(id);
   }
 }

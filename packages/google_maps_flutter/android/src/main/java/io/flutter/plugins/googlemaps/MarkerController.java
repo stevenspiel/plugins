@@ -12,18 +12,40 @@ import com.google.android.gms.maps.model.Marker;
 class MarkerController implements MarkerOptionsSink {
   private final Marker marker;
   private final OnMarkerTappedListener onTappedListener;
+  private final OnMarkerDragListener onDragListener;
   private boolean consumeTapEvents;
 
-  MarkerController(
-      Marker marker, boolean consumeTapEvents, OnMarkerTappedListener onTappedListener) {
+  MarkerController(Marker marker, boolean consumeTapEvents, OnMarkerTappedListener onTappedListener, OnMarkerDragListener onDragListener) {
     this.marker = marker;
     this.consumeTapEvents = consumeTapEvents;
     this.onTappedListener = onTappedListener;
+    this.onDragListener = onDragListener;
   }
 
   boolean onTap() {
     if (onTappedListener != null) {
       onTappedListener.onMarkerTapped(marker);
+    }
+    return consumeTapEvents;
+  }
+
+  boolean onDrag(LatLng latLng) {
+    if (onDragListener != null) {
+      onDragListener.onMarkerDrag(marker);
+    }
+    return consumeTapEvents;
+  }
+
+  boolean onDragStart(LatLng latLng) {
+    if (onDragListener != null) {
+      onDragListener.onMarkerDragStart(marker);
+    }
+    return consumeTapEvents;
+  }
+
+  boolean onDragEnd(LatLng latLng) {
+    if (onDragListener != null) {
+      onDragListener.onMarkerDragEnd(marker);
     }
     return consumeTapEvents;
   }

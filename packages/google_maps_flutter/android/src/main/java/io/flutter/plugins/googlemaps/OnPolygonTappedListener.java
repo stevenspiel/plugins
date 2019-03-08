@@ -6,8 +6,8 @@ found in the LICENSE file.
 
 package io.flutter.plugins.googlemaps;
 
-import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.Polygon;
 
-interface OnPolylineTappedListener {
-  void onPolylineTapped(Polyline polyline);
+interface OnPolygonTappedListener {
+  void onPolygonTapped(Polygon polygon);
 }

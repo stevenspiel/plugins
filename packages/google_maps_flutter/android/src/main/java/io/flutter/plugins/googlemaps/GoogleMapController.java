@@ -30,8 +30,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -49,7 +49,8 @@ final class GoogleMapController
         GoogleMap.OnCameraMoveStartedListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener,
-        GoogleMap.OnPolylineClickListener,
+        GoogleMap.OnMarkerDragListener,
+        GoogleMap.OnPolygonClickListener,
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationButtonClickListener,
@@ -58,7 +59,8 @@ final class GoogleMapController
         MethodChannel.MethodCallHandler,
         OnMapReadyCallback,
         OnMarkerTappedListener,
-        OnPolylineTappedListener,
+        OnMarkerDragListener,
+        OnPolygonTappedListener,
         PlatformView {
   private static final String TAG = "GoogleMapController";
   private final int id;
@@ -67,7 +69,7 @@ final class GoogleMapController
   private final PluginRegistry.Registrar registrar;
   private final MapView mapView;
   private final Map<String, MarkerController> markers;
-  private final Map<String, PolylineController> polylines;
+  private final Map<String, PolygonController> polygons;
   private GoogleMap googleMap;
   private boolean trackCameraPosition = false;
   private boolean myLocationEnabled = false;
@@ -89,7 +91,7 @@ final class GoogleMapController
     this.registrar = registrar;
     this.mapView = new MapView(context, options);
     this.markers = new HashMap<>();
-    this.polylines = new HashMap<>();
+    this.polygons = new HashMap<>();
     this.density = context.getResources().getDisplayMetrics().density;
     methodChannel =
         new MethodChannel(registrar.messenger(), "plugins.flutter.io/google_maps_" + id);
@@ -158,7 +160,7 @@ final class GoogleMapController
 
   Marker addMarker(MarkerOptions markerOptions, boolean consumesTapEvents) {
     final Marker marker = googleMap.addMarker(markerOptions);
-    markers.put(marker.getId(), new MarkerController(marker, consumesTapEvents, this));
+    markers.put(marker.getId(), new MarkerController(marker, consumesTapEvents, this, this));
     return marker;
   }
 
@@ -177,29 +179,29 @@ final class GoogleMapController
     return marker;
   }
 
-  private PolylineBuilder newPolylineBuilder() {
-    return new PolylineBuilder(this);
+  private PolygonBuilder newPolygonBuilder() {
+    return new PolygonBuilder(this);
   }
 
-  Polyline addPolyline(PolylineOptions polylineOptions, boolean consumesTapEvents) {
-    final Polyline polyline = googleMap.addPolyline(polylineOptions);
-    polylines.put(polyline.getId(), new PolylineController(polyline, consumesTapEvents, this));
-    return polyline;
+  Polygon addPolygon(PolygonOptions polygonOptions, boolean consumesTapEvents) {
+    final Polygon polygon = googleMap.addPolygon(polygonOptions);
+    polygons.put(polygon.getId(), new PolygonController(polygon, consumesTapEvents, this));
+    return polygon;
   }
 
-  private void removePolyline(String polylineId) {
-    final PolylineController polylineController = polylines.remove(polylineId);
-    if (polylineController != null) {
-      polylineController.remove();
+  private void removePolygon(String polygonId) {
+    final PolygonController polygonController = polygons.remove(polygonId);
+    if (polygonController != null) {
+      polygonController.remove();
     }
   }
 
-  private PolylineController polyline(String polylineId) {
-    final PolylineController polyline = polylines.get(polylineId);
-    if (polyline == null) {
-      throw new IllegalArgumentException("Unknown polyline: " + polylineId);
+  private PolygonController polygon(String polygonId) {
+    final PolygonController polygon = polygons.get(polygonId);
+    if (polygon == null) {
+      throw new IllegalArgumentException("Unknown polygon: " + polygonId);
     }
-    return polyline;
+    return polygon;
   }
 
   @Override
@@ -214,7 +216,8 @@ final class GoogleMapController
     googleMap.setOnCameraMoveListener(this);
     googleMap.setOnCameraIdleListener(this);
     googleMap.setOnMarkerClickListener(this);
-    googleMap.setOnPolylineClickListener(this);
+    googleMap.setOnMarkerDragListener(this);
+    googleMap.setOnPolygonClickListener(this);
     googleMap.setOnMapLongClickListener(this);
     googleMap.setOnMapClickListener(this);
     googleMap.setOnMyLocationButtonClickListener(this);
@@ -262,6 +265,30 @@ final class GoogleMapController
           result.success(markerId);
           break;
         }
+      case "marker#drag":
+        {
+          final MarkerBuilder markerBuilder = newMarkerBuilder();
+          Convert.interpretMarkerOptions(call.argument("options"), markerBuilder);
+          final String markerId = markerBuilder.build();
+          result.success(markerId);
+          break;
+        }
+      case "marker#dragStart":
+        {
+          final MarkerBuilder markerBuilder = newMarkerBuilder();
+          Convert.interpretMarkerOptions(call.argument("options"), markerBuilder);
+          final String markerId = markerBuilder.build();
+          result.success(markerId);
+          break;
+        }
+      case "marker#dragEnd":
+        {
+          final MarkerBuilder markerBuilder = newMarkerBuilder();
+          Convert.interpretMarkerOptions(call.argument("options"), markerBuilder);
+          final String markerId = markerBuilder.build();
+          result.success(markerId);
+          break;
+        }
       case "marker#remove":
         {
           final String markerId = call.argument("marker");
@@ -277,26 +304,26 @@ final class GoogleMapController
           result.success(null);
           break;
         }
-      case "polyline#add":
+      case "polygon#add":
         {
-          final PolylineBuilder polylineBuilder = newPolylineBuilder();
-          Convert.interpretPolylineOptions(call.argument("options"), polylineBuilder);
-          final String polylineId = polylineBuilder.build();
-          result.success(polylineId);
+          final PolygonBuilder polygonBuilder = newPolygonBuilder();
+          Convert.interpretPolygonOptions(call.argument("options"), polygonBuilder);
+          final String polygonId = polygonBuilder.build();
+          result.success(polygonId);
           break;
         }
-      case "polyline#remove":
+      case "polygon#remove":
         {
-          final String polylineId = call.argument("polyline");
-          removePolyline(polylineId);
+          final String polygonId = call.argument("polygon");
+          removePolygon(polygonId);
           result.success(null);
           break;
         }
-      case "polyline#update":
+      case "polygon#update":
         {
-          final String polylineId = call.argument("polyline");
-          final PolylineController polyline = polyline(polylineId);
-          Convert.interpretPolylineOptions(call.argument("options"), polyline);
+          final String polygonId = call.argument("polygon");
+          final PolygonController polygon = polygon(polygonId);
+          Convert.interpretPolygonOptions(call.argument("options"), polygon);
           result.success(null);
           break;
         }
@@ -343,10 +370,37 @@ final class GoogleMapController
   }
 
   @Override
-  public void onPolylineTapped(Polyline polyline) {
+  public void onMarkerDrag(Marker marker) {
     final Map<String, Object> arguments = new HashMap<>(2);
-    arguments.put("polyline", polyline.getId());
-    methodChannel.invokeMethod("polyline#onTap", arguments);
+    arguments.put("marker", marker.getId());
+    arguments.put("latitude", marker.getPosition().latitude);
+    arguments.put("longitude", marker.getPosition().longitude);
+    methodChannel.invokeMethod("marker#onDrag", arguments);
+  }
+
+  @Override
+  public void onMarkerDragStart(Marker marker) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("marker", marker.getId());
+    arguments.put("latitude", marker.getPosition().latitude);
+    arguments.put("longitude", marker.getPosition().longitude);
+    methodChannel.invokeMethod("marker#onDragStart", arguments);
+  }
+
+  @Override
+  public void onMarkerDragEnd(Marker marker) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("marker", marker.getId());
+    arguments.put("latitude", marker.getPosition().latitude);
+    arguments.put("longitude", marker.getPosition().longitude);
+    methodChannel.invokeMethod("marker#onDragEnd", arguments);
+  }
+
+  @Override
+  public void onPolygonTapped(Polygon polygon) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("polygon", polygon.getId());
+    methodChannel.invokeMethod("polygon#onTap", arguments);
   }
 
   @Override
@@ -387,9 +441,9 @@ final class GoogleMapController
   }
 
   @Override
-  public void onPolylineClick(Polyline polyline) {
-    final PolylineController polylineController = polylines.get(polyline.getId());
-    polylineController.onTap();
+  public void onPolygonClick(Polygon polygon) {
+    final PolygonController polygonController = polygons.get(polygon.getId());
+    polygonController.onTap();
   }
 
   @Override
