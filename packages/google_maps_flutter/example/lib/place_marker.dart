@@ -37,11 +37,13 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
   void _onMapCreated(GoogleMapController controller) {
     this.controller = controller;
     controller.onMarkerTapped.add(_onMarkerTapped);
+    controller.onMarkerDragStart.add(_onMarkerDragStart);
   }
 
   @override
   void dispose() {
     controller?.onMarkerTapped?.remove(_onMarkerTapped);
+    controller?.onMarkerDragStart?.remove(_onMarkerDragStart);
     super.dispose();
   }
 
@@ -51,16 +53,21 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
         const MarkerOptions(icon: BitmapDescriptor.defaultMarker),
       );
     }
+
+    if (!marker.options.draggable) {
+      setState(() => _selectedMarker = marker);
+    }
+  }
+
+  void _onMarkerDragStart(Marker marker, LatLng latLong) {
+    if (_selectedMarker != null) {
+      _updateSelectedMarker(
+        const MarkerOptions(icon: BitmapDescriptor.defaultMarker),
+      );
+    }
     setState(() {
       _selectedMarker = marker;
     });
-    _updateSelectedMarker(
-      MarkerOptions(
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueGreen,
-        ),
-      ),
-    );
   }
 
   void _updateSelectedMarker(MarkerOptions changes) {
