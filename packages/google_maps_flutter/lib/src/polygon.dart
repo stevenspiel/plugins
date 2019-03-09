@@ -20,7 +20,6 @@ class PolygonOptions {
       this.strokeColor,
       this.strokeJointType,
       this.fillColor,
-      this.fillColorAlpha,
       this.zIndex,
       this.visible,
       this.geodesic,
@@ -32,7 +31,6 @@ class PolygonOptions {
   final int strokeColor;
   final int strokeJointType;
   final int fillColor;
-  final double fillColorAlpha;
   final double zIndex;
   final bool visible;
   final bool geodesic;
@@ -45,7 +43,6 @@ class PolygonOptions {
     strokeColor: 0x80ff0000,
     strokeJointType: 1,
     fillColor: 0x35ff0000,
-    fillColorAlpha: 0.2,
     zIndex: 0.5,
     visible: true,
     geodesic: true,
@@ -53,7 +50,7 @@ class PolygonOptions {
 
   @override
   String toString() {
-    return 'PolygonOptions{points: $points, holes: $holes, strokeWidth: $strokeWidth, strokeColor: $strokeColor, strokeJointType: $strokeJointType, fillColor: $fillColor, fillColorAlpha: $fillColorAlpha, zIndex: $zIndex, visible: $visible, geodesic: $geodesic, clickable: $clickable}';
+    return 'PolygonOptions{points: $points, holes: $holes, strokeWidth: $strokeWidth, strokeColor: $strokeColor, strokeJointType: $strokeJointType, fillColor: $fillColor, zIndex: $zIndex, visible: $visible, geodesic: $geodesic, clickable: $clickable}';
   }
 
   PolygonOptions copyWith(PolygonOptions changes) {
@@ -98,8 +95,6 @@ class PolygonOptions {
     addIfPresent('zIndex', zIndex);
     addIfPresent('geodesic', geodesic);
     addIfPresent('clickable', clickable);
-
-    json['fillColorAlpha'] = fillColorAlpha ?? 0.2;
 
     return json;
   }
