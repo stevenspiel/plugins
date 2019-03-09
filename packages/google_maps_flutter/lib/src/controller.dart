@@ -4,6 +4,8 @@
 
 part of google_maps_flutter;
 
+enum MeasurementType { Meters }
+
 /// Controller for a single GoogleMap instance running on the host platform.
 ///
 /// Change listeners are notified upon changes to any of
@@ -182,7 +184,6 @@ class GoogleMapController extends ChangeNotifier {
         break;
 
       case 'location#buttonClick':
-        print('location#buttonClick!!!!!!!!!!!!!!!!!');
         onLocationButtonClick();
         break;
 
@@ -295,6 +296,28 @@ class GoogleMapController extends ChangeNotifier {
     _polygons[polygonId] = polygon;
     notifyListeners();
     return polygon;
+  }
+
+  Future<double> getPolygonArea(PolygonOptions options, MeasurementType measurementType) async {
+    double area;
+    String method;
+
+    switch (measurementType) {
+      case MeasurementType.Meters: method = "getAreaInMeters";
+    }
+
+    try {
+      area = await _channel.invokeMethod(
+        'polygon#$method',
+        <String, dynamic>{
+          'options': options._toJson(),
+        },
+      );
+    } catch (e) {
+      print('error calculating area: $e');
+    }
+
+    return area;
   }
 
   /// Updates the specified [marker] with the given [changes]. The marker must

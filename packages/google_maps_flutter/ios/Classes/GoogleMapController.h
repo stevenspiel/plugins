@@ -4,6 +4,7 @@
 
 #import <Flutter/Flutter.h>
 #import <GoogleMaps/GoogleMaps.h>
+#import <GoogleMaps/GMSGeometryUtils.h>
 #import <UIKit/UIKit.h>
 #import "GoogleMapMarkerController.h"
 #import "GoogleMapPolygonController.h"

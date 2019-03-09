@@ -32,12 +32,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.maps.android.SphericalUtil;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -310,6 +312,13 @@ final class GoogleMapController
           Convert.interpretPolygonOptions(call.argument("options"), polygonBuilder);
           final String polygonId = polygonBuilder.build();
           result.success(polygonId);
+          break;
+        }
+      case "polygon#getAreaInMeters":
+        {
+          final List<LatLng> points = Convert.extractPointsFromOptions(call.argument("options"));
+          final Double area = SphericalUtil.computeArea(points);
+          result.success(area);
           break;
         }
       case "polygon#remove":

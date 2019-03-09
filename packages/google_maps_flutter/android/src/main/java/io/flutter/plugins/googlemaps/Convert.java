@@ -341,6 +341,17 @@ class Convert {
     }
   }
 
+  static List<LatLng> extractPointsFromOptions(Object o) {
+    final Map<?, ?> data = toMap(o);
+
+    final Object points = data.get("points");
+    if (points != null) {
+      return _toPoints(points);
+    } else {
+      return new ArrayList<>(0);
+    }
+  }
+
   static void interpretPolygonOptions(Object o, PolygonOptionsSink sink) {
     final Map<?, ?> data = toMap(o);
 

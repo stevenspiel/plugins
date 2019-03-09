@@ -29,6 +29,9 @@ static uint64_t _nextPolygonId = 0;
 - (void)setPoints:(GMSPath*)points {
   _polygon.path = points;
 }
+- (GMSPath*)getPath {
+  return _polygon.path;
+}
 - (void)setClickable:(BOOL)clickable {
   _polygon.tappable = clickable;
 }

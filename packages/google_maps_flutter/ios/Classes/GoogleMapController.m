@@ -135,6 +135,10 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
     NSString* polygonId = [self addPolygonWithPath:toPath(options[@"points"])];
     interpretPolygonOptions(options, [self polygonWithId:polygonId], _registrar);
     result(polygonId);
+  } else if ([call.method isEqualToString:@"polygon#getAreaInMeters"]) {
+    NSDictionary* options = call.arguments[@"options"];
+    NSDecimalNumber* area = [self getAreaInMeters:toPath(options[@"points"])];
+    result(area);
   } else if ([call.method isEqualToString:@"polygon#update"]) {
     interpretPolygonOptions(call.arguments[@"options"],
                              [self polygonWithId:call.arguments[@"polygon"]], _registrar);
@@ -201,6 +205,11 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
 
 - (FLTGoogleMapPolygonController*)polygonWithId:(NSString*)polygonId {
   return _polygons[polygonId];
+}
+
+- (NSDecimalNumber*)getAreaInMeters:(GMSPath*)path {
+  double dbl = GMSGeometryArea(path);
+  return [[NSDecimalNumber alloc] initWithDouble: dbl];
 }
 
 - (void)removePolygonWithId:(NSString*)polygonId {
