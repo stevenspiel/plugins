@@ -1,5 +1,6 @@
 package io.flutter.plugins.googlemaps;
 
+import android.graphics.Color;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polygon;
@@ -64,8 +65,9 @@ public class PolygonController implements PolygonOptionsSink {
   }
 
   @Override
-  public void setFillColor(int fillColor) {
-    polygon.setFillColor(fillColor);
+  public void setFillColor(int color) {
+    final int transparentFill = Color.argb(125, Color.red(color), Color.green(color), Color.blue(color));
+    polygon.setFillColor(transparentFill);
   }
 
   @Override

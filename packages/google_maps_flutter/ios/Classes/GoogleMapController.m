@@ -10,6 +10,12 @@
                    blue:((float)(rgbValue & 0xFF)) / 255.0             \
                   alpha:1.0]
 
+#define UITransparentColorFromRGB(rgbValue)                            \
+  [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16)) / 255.0 \
+                  green:((float)((rgbValue & 0xFF00) >> 8)) / 255.0    \
+                   blue:((float)(rgbValue & 0xFF)) / 255.0             \
+                  alpha:0.5]
+
 #pragma mark - Conversion of JSON-like values sent via platform channels. Forward declarations.
 
 static id positionToJson(GMSCameraPosition* position);
@@ -612,7 +618,7 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
   }
   id fillColor = data[@"fillColor"];
   if (fillColor) {
-    [sink setFillColor:UIColorFromRGB(toInt(fillColor))];
+    [sink setFillColor:UITransparentColorFromRGB(toInt(fillColor))];
   }
   id geodesic = data[@"geodesic"];
   if (geodesic) {
