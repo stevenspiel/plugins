@@ -36,6 +36,7 @@
 - (void)animateWithCameraUpdate:(GMSCameraUpdate*)cameraUpdate;
 - (void)moveWithCameraUpdate:(GMSCameraUpdate*)cameraUpdate;
 - (GMSCameraPosition*)cameraPosition;
+- (void)takeSnapshot:(NSString*)filePath;
 - (NSString*)addMarkerWithPosition:(CLLocationCoordinate2D)position;
 - (FLTGoogleMapMarkerController*)markerWithId:(NSString*)markerId;
 - (void)removeMarkerWithId:(NSString*)markerId;

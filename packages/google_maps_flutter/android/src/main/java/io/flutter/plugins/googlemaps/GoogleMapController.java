@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,7 +38,12 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileOutputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +60,7 @@ final class GoogleMapController
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnPolygonClickListener,
         GoogleMap.OnMapClickListener,
+        GoogleMap.OnMapLoadedCallback,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -220,6 +227,7 @@ final class GoogleMapController
     googleMap.setOnMarkerClickListener(this);
     googleMap.setOnMarkerDragListener(this);
     googleMap.setOnPolygonClickListener(this);
+    googleMap.setOnMapLoadedCallback(this);
     googleMap.setOnMapLongClickListener(this);
     googleMap.setOnMapClickListener(this);
     googleMap.setOnMyLocationButtonClickListener(this);
@@ -241,6 +249,13 @@ final class GoogleMapController
         {
           Convert.interpretGoogleMapOptions(call.argument("options"), this);
           result.success(Convert.toJson(getCameraPosition()));
+          break;
+        }
+      case "map#takeSnapshot":
+        {
+          final String filePath = call.argument("filePath");
+          takeSnapShot(filePath);
+          result.success(null);
           break;
         }
       case "camera#move":
@@ -342,6 +357,12 @@ final class GoogleMapController
   }
 
   @Override
+  public void onMapLoaded() {
+    final Map<String, Object> arguments = new HashMap<>();
+    methodChannel.invokeMethod("map#onLoaded", arguments);
+  }
+
+  @Override
   public void onCameraMoveStarted(int reason) {
     final Map<String, Object> arguments = new HashMap<>(2);
     boolean isGesture = reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE;
@@ -418,6 +439,47 @@ final class GoogleMapController
     arguments.put("latitude", latLng.latitude);
     arguments.put("longitude", latLng.longitude);
     methodChannel.invokeMethod("map#onTap", arguments);
+  }
+
+  public void takeSnapShot(String filePath) {
+    final String path = filePath;
+
+    GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+      Bitmap bitmap;
+
+      @Override
+      public void onSnapshotReady(Bitmap snapshot) {
+        bitmap = snapshot;
+        String returnPath;
+
+        try {
+          File file = new File(path);
+          FileOutputStream fout = new FileOutputStream(file);
+
+          // Write the string to the file
+          bitmap.compress(Bitmap.CompressFormat.PNG, 90, fout);
+          fout.flush();
+          fout.close();
+          returnPath = path;
+        } catch (FileNotFoundException e) {
+          // TODO Auto-generated catch block
+          Log.d("ImageCapture", "FileNotFoundException");
+          Log.d("ImageCapture", e.getMessage());
+          returnPath = "";
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          Log.d("ImageCapture", "IOException");
+          Log.d("ImageCapture", e.getMessage());
+          returnPath = "";
+        }
+
+        final Map<String, Object> arguments = new HashMap<>(2);
+        arguments.put("filePath", returnPath);
+        methodChannel.invokeMethod("map#onSnapshotReady", arguments);
+      }
+    };
+
+    googleMap.snapshot(callback);
   }
 
   @Override

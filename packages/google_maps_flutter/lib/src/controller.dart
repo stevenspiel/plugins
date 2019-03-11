@@ -55,8 +55,9 @@ class GoogleMapController extends ChangeNotifier {
   final ArgumentDragCallbacks<Marker, LatLng> onMarkerDragEnd = ArgumentDragCallbacks<Marker, LatLng>();
 
   /// Callbacks to receive tap events for markers placed on this map.
-  final ArgumentCallbacks<Polygon> onPolygonTapped =
-      ArgumentCallbacks<Polygon>();
+  final ArgumentCallbacks<Polygon> onPolygonTapped = ArgumentCallbacks<Polygon>();
+
+  final VoidCallbacks onMapLoaded = VoidCallbacks();
 
   /// Callbacks to receive tap events for markers placed on this map.
   final ArgumentCallbacks<LatLng> onMapTapped = ArgumentCallbacks<LatLng>();
@@ -71,8 +72,9 @@ class GoogleMapController extends ChangeNotifier {
   final VoidCallbacks onLocationButtonClick = VoidCallbacks();
 
   /// Callbacks to receive tap events for info windows on markers
-  final ArgumentCallbacks<Marker> onInfoWindowTapped =
-      ArgumentCallbacks<Marker>();
+  final ArgumentCallbacks<Marker> onInfoWindowTapped = ArgumentCallbacks<Marker>();
+
+  final ArgumentCallbacks<String> onSnapshotReady = ArgumentCallbacks<String>();
 
   /// The current set of markers on this map.
   ///
@@ -105,6 +107,15 @@ class GoogleMapController extends ChangeNotifier {
         if (marker != null) {
           onInfoWindowTapped(marker);
         }
+        break;
+
+      case 'map#onLoaded':
+        onMapLoaded();
+        break;
+
+      case 'map#onSnapshotReady':
+        final String filePath = call.arguments['filePath'];
+        onSnapshotReady(filePath);
         break;
 
       case 'marker#onTap':
@@ -223,6 +234,15 @@ class GoogleMapController extends ChangeNotifier {
     );
     _cameraPosition = CameraPosition.fromMap(json);
     notifyListeners();
+  }
+
+  Future<void> takeSnapshot(String filePath) async {
+    // TODO(amirh): remove this on when the invokeMethod update makes it to stable Flutter.
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
+    await _channel.invokeMethod('map#takeSnapshot', <String, dynamic>{
+      'filePath': filePath,
+    });
   }
 
   /// Starts an animated change of the map camera position.

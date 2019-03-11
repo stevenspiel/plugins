@@ -119,6 +119,9 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
   } else if ([call.method isEqualToString:@"camera#move"]) {
     [self moveWithCameraUpdate:toCameraUpdate(call.arguments[@"cameraUpdate"])];
     result(nil);
+  } else if ([call.method isEqualToString:@"map#takeSnapshot"]) {
+    [self takeSnapshot:call.arguments[@"filePath"]];
+    result(nil);
   } else if ([call.method isEqualToString:@"map#update"]) {
     interpretMapOptions(call.arguments[@"options"], self);
     result(positionToJson([self cameraPosition]));
@@ -181,6 +184,19 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
   } else {
     return nil;
   }
+}
+
+- (void)takeSnapshot:(NSString*)filePath {
+  UIGraphicsBeginImageContextWithOptions(_mapView.bounds.size, YES, 0);
+  [_mapView drawViewHierarchyInRect:_mapView.bounds afterScreenUpdates:YES];
+  UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  // write to file
+  [UIImagePNGRepresentation(snapshot) writeToFile:filePath atomically:YES];
+
+  // invoke callback
+  [_channel invokeMethod:@"map#onSnapshotReady" arguments:@{@"filePath" : filePath}];
 }
 
 - (NSString*)addMarkerWithPosition:(CLLocationCoordinate2D)position {
@@ -282,6 +298,10 @@ static void interpretPolygonOptions(id json, id<FLTGoogleMapPolygonOptionsSink> 
 }
 
 #pragma mark - GMSMapViewDelegate methods
+
+-(void)mapViewSnapshotReady:(GMSMapView *)mapView{
+  [_channel invokeMethod:@"map#onLoaded" arguments:@{}];
+}
 
 - (void)mapView:(GMSMapView*)mapView willMove:(BOOL)gesture {
   [_channel invokeMethod:@"camera#onMoveStarted" arguments:@{@"isGesture" : @(gesture)}];
