@@ -306,6 +306,12 @@ class GoogleMapController extends ChangeNotifier {
   Future<Polygon> addPolygon(PolygonOptions options) async {
     final PolygonOptions effectiveOptions =
         PolygonOptions.defaultOptions.copyWith(options);
+
+    if ((options.points ?? <LatLng>[]).length < 2) {
+      print('Polygon must have 3 or more points');
+      return Future<Polygon>(null);
+    }
+
     final String polygonId = await _channel.invokeMethod(
       'polygon#add',
       <String, dynamic>{
