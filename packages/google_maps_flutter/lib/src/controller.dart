@@ -110,6 +110,8 @@ class GoogleMapController extends ChangeNotifier {
         break;
 
       case 'map#onLoaded':
+        // sometimes it hasn't truly loaded yet loading. Give it a second.
+        await Future.delayed(const Duration(seconds: 1), () => null);
         onMapLoaded();
         break;
 
