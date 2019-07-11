@@ -485,6 +485,12 @@ final class GoogleMapController
   }
 
   @Override
+  public void onMapLoaded() {
+    final Map<String, Object> arguments = new HashMap<>();
+    methodChannel.invokeMethod("map#onLoaded", arguments);
+  }
+
+  @Override
   public void onCameraMoveStarted(int reason) {
     final Map<String, Object> arguments = new HashMap<>(2);
     boolean isGesture = reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE;
@@ -601,6 +607,7 @@ final class GoogleMapController
   }
 
   private void setGoogleMapListener(@Nullable GoogleMapListener listener) {
+    googleMap.setOnMapLoadedListener(listener);
     googleMap.setOnCameraMoveStartedListener(listener);
     googleMap.setOnCameraMoveListener(listener);
     googleMap.setOnCameraIdleListener(listener);
@@ -982,6 +989,7 @@ final class GoogleMapController
 interface GoogleMapListener
     extends GoogleMap.OnCameraIdleListener,
         GoogleMap.OnCameraMoveListener,
+        GoogleMap.OnMapLoadedListener,
         GoogleMap.OnCameraMoveStartedListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleMap.OnMarkerClickListener,
