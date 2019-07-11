@@ -4,6 +4,8 @@
 
 part of google_maps_flutter;
 
+typedef ValuesChanged<T, R> = void Function(T value1, R value2);
+
 dynamic _offsetToJson(Offset offset) {
   if (offset == null) {
     return null;
@@ -160,6 +162,9 @@ class Marker {
     this.visible = true,
     this.zIndex = 0.0,
     this.onTap,
+    this.onDragStart,
+    this.onDrag,
+    this.onDragEnd,
   }) : assert(alpha == null || (0.0 <= alpha && alpha <= 1.0));
 
   /// Uniquely identifies a [Marker].
@@ -216,6 +221,15 @@ class Marker {
   /// Callbacks to receive tap events for markers placed on this map.
   final VoidCallback onTap;
 
+  /// Callback for marker drag start
+  final ValuesChanged<Marker, LatLng> onDragStart;
+
+  /// Callback for marker drag
+  final ValuesChanged<Marker, LatLng> onDrag;
+
+  /// Callback for marker drag end
+  final ValuesChanged<Marker, LatLng> onDragEnd;
+
   /// Creates a new [Marker] object whose values are the same as this instance,
   /// unless overwritten by the specified parameters.
   Marker copyWith({
@@ -231,6 +245,9 @@ class Marker {
     bool visibleParam,
     double zIndexParam,
     VoidCallback onTapParam,
+    ValueChanged<LatLng> onDragStartParam,
+    ValueChanged<LatLng> onDragParam,
+    ValueChanged<LatLng> onDragEndParam,
   }) {
     return Marker(
       markerId: markerId,
@@ -246,6 +263,9 @@ class Marker {
       visible: visibleParam ?? visible,
       zIndex: zIndexParam ?? zIndex,
       onTap: onTapParam ?? onTap,
+      onDragStart: onDragStartParam ?? onDragStart,
+      onDrag: onDragParam ?? onDrag,
+      onDragEnd: onDragEndParam ?? onDragEnd,
     );
   }
 
