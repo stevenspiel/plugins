@@ -43,6 +43,7 @@ class GoogleMap extends StatefulWidget {
     this.onCameraIdle,
     this.onTap,
     this.onLongPress,
+    this.onMapLoaded,
   })  : assert(initialCameraPosition != null),
         super(key: key);
 
@@ -91,6 +92,11 @@ class GoogleMap extends StatefulWidget {
 
   /// Circles to be placed on the map.
   final Set<Circle> circles;
+
+  /// Called when map finishes loading all images in frame
+  /// Unlike onCreate, onMap loaded makes sure each square is rendered
+  /// properly before firing
+  final VoidCallback onMapLoaded;
 
   /// Called when the camera starts moving.
   ///

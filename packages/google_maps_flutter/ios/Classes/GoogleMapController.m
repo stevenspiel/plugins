@@ -361,6 +361,10 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
   }
 }
 
+- (void)mapViewSnapshotReady:(GMSMapView *)mapView{
+  [_channel invokeMethod:@"map#onLoaded" arguments:@{}];
+}
+
 - (void)mapView:(GMSMapView*)mapView idleAtCameraPosition:(GMSCameraPosition*)position {
   [_channel invokeMethod:@"camera#onIdle" arguments:@{}];
 }
