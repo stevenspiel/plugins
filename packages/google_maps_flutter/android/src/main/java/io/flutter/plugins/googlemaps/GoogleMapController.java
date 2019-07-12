@@ -61,6 +61,7 @@ final class GoogleMapController
         OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMapLongClickListener,
+        GoogleMap.OnMarkerDragListener,
         PlatformView {
 
   private static final String TAG = "GoogleMapController";
@@ -178,6 +179,7 @@ final class GoogleMapController
     googleMap.setOnCameraMoveListener(this);
     googleMap.setOnCameraIdleListener(this);
     googleMap.setOnMarkerClickListener(this);
+    googleMap.setOnMarkerDragListener(this);
     googleMap.setOnPolygonClickListener(this);
     googleMap.setOnPolylineClickListener(this);
     googleMap.setOnCircleClickListener(this);
@@ -396,6 +398,21 @@ final class GoogleMapController
   @Override
   public boolean onMarkerClick(Marker marker) {
     return markersController.onMarkerTap(marker.getId());
+  }
+
+  @Override
+  public void onMarkerDragStart(Marker marker) {
+    markersController.onMarkerDragStart(marker.getId(), marker.getPosition());
+  }
+
+  @Override
+  public void onMarkerDrag(Marker marker) {
+    markersController.onMarkerDrag(marker.getId(), marker.getPosition());
+  }
+
+  @Override
+  public void onMarkerDragEnd(Marker marker) {
+    markersController.onMarkerDragEnd(marker.getId(), marker.getPosition());
   }
 
   @Override
