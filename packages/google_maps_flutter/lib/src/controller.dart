@@ -37,6 +37,13 @@ class GoogleMapController {
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
+      case 'map#onLoaded':
+        // sometimes it hasn't truly loaded yet loading. Give it a second.
+        await Future<void>.delayed(const Duration(seconds: 1), () => null);
+        if (_googleMapState.widget.onMapLoaded != null) {
+          _googleMapState.widget.onMapLoaded();
+        }
+        break;
       case 'camera#onMoveStarted':
         if (_googleMapState.widget.onCameraMoveStarted != null) {
           _googleMapState.widget.onCameraMoveStarted();
