@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +39,10 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -292,6 +297,13 @@ final class GoogleMapController
           result.success(area);
           break;
         }
+      case "map#takeSnapshot":
+        {
+          final String filePath = call.argument("filePath");
+          takeSnapShot(filePath);
+          result.success(null);
+          break;
+        }
       case "map#isCompassEnabled":
         {
           result.success(googleMap.getUiSettings().isCompassEnabled());
@@ -428,6 +440,47 @@ final class GoogleMapController
   @Override
   public void onCircleClick(Circle circle) {
     circlesController.onCircleTap(circle.getId());
+  }
+
+  public void takeSnapShot(String filePath) {
+    final String path = filePath;
+
+    GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+      Bitmap bitmap;
+
+      @Override
+      public void onSnapshotReady(Bitmap snapshot) {
+        bitmap = snapshot;
+        String returnPath;
+
+        try {
+          File file = new File(path);
+          FileOutputStream fout = new FileOutputStream(file);
+
+          // Write the string to the file
+          bitmap.compress(Bitmap.CompressFormat.PNG, 90, fout);
+          fout.flush();
+          fout.close();
+          returnPath = path;
+        } catch (FileNotFoundException e) {
+          // TODO Auto-generated catch block
+          Log.d("ImageCapture", "FileNotFoundException");
+          Log.d("ImageCapture", e.getMessage());
+          returnPath = "";
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          Log.d("ImageCapture", "IOException");
+          Log.d("ImageCapture", e.getMessage());
+          returnPath = "";
+        }
+
+        final Map<String, Object> arguments = new HashMap<>(2);
+        arguments.put("filePath", returnPath);
+        methodChannel.invokeMethod("map#onSnapshotReady", arguments);
+      }
+    };
+
+    googleMap.snapshot(callback);
   }
 
   @Override

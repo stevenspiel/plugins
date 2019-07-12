@@ -39,6 +39,12 @@ class GoogleMapController {
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
+      case 'map#onSnapshotReady':
+        final String filePath = call.arguments['filePath'];
+        if (_googleMapState.onSnapshotReady != null) {
+          _googleMapState.onSnapshotReady(filePath);
+        }
+        break;
       case 'camera#onMoveStarted':
         if (_googleMapState.widget.onCameraMoveStarted != null) {
           _googleMapState.widget.onCameraMoveStarted();
@@ -206,6 +212,12 @@ class GoogleMapController {
     }
 
     return area;
+  }
+
+  Future<void> takeSnapshot(String filePath) async {
+    await channel.invokeMethod<void>('map#takeSnapshot', <String, dynamic>{
+      'filePath': filePath,
+    });
   }
 
   /// Changes the map camera position.
