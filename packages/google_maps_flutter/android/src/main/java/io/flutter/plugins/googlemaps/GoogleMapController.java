@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /** Controller of a single GoogleMaps MapView instance. */
 final class GoogleMapController
     implements Application.ActivityLifecycleCallbacks,
+        GoogleMap.OnMapLoadedCallback,
         GoogleMap.OnCameraIdleListener,
         GoogleMap.OnCameraMoveListener,
         GoogleMap.OnCameraMoveStartedListener,
@@ -180,6 +181,7 @@ final class GoogleMapController
       mapReadyResult.success(null);
       mapReadyResult = null;
     }
+    googleMap.setOnMapLoadedCallback(this);
     googleMap.setOnCameraMoveStartedListener(this);
     googleMap.setOnCameraMoveListener(this);
     googleMap.setOnCameraIdleListener(this);
@@ -377,6 +379,12 @@ final class GoogleMapController
     final Map<String, Object> arguments = new HashMap<>(2);
     arguments.put("position", Convert.latLngToJson(latLng));
     methodChannel.invokeMethod("map#onLongPress", arguments);
+  }
+
+  @Override
+  public void onMapLoaded() {
+    final Map<String, Object> arguments = new HashMap<>();
+    methodChannel.invokeMethod("map#onLoaded", arguments);
   }
 
   @Override

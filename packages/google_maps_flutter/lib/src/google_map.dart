@@ -44,6 +44,7 @@ class GoogleMap extends StatefulWidget {
     this.onTap,
     this.onLongPress,
     this.onSnapshotReady,
+    this.onMapLoaded,
   })  : assert(initialCameraPosition != null),
         super(key: key);
 
@@ -95,6 +96,11 @@ class GoogleMap extends StatefulWidget {
 
   /// Called when snapshot is ready
   final ArgumentCallback<String> onSnapshotReady;
+
+  /// Called when map finishes loading all images in frame
+  /// Unlike onCreate, onMap loaded makes sure each square is rendered
+  /// properly before firing
+  final VoidCallback onMapLoaded;
 
   /// Called when the camera starts moving.
   ///
