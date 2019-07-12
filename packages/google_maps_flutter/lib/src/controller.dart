@@ -163,6 +163,12 @@ class GoogleMapController {
     });
   }
 
+  Future<void> takeSnapshot(String filePath) async {
+    await channel.invokeMethod<void>('map#takeSnapshot', <String, dynamic>{
+      'filePath': filePath,
+    });
+  }
+
   /// Changes the map camera position.
   ///
   /// The returned [Future] completes after the change has been made on the

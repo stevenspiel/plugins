@@ -43,6 +43,7 @@ class GoogleMap extends StatefulWidget {
     this.onCameraIdle,
     this.onTap,
     this.onLongPress,
+    this.onSnapshotReady,
   })  : assert(initialCameraPosition != null),
         super(key: key);
 
@@ -91,6 +92,9 @@ class GoogleMap extends StatefulWidget {
 
   /// Circles to be placed on the map.
   final Set<Circle> circles;
+
+  /// Called when snapshot is ready
+  final ArgumentCallback<String> onSnapshotReady;
 
   /// Called when the camera starts moving.
   ///
@@ -295,6 +299,11 @@ class _GoogleMapState extends State<GoogleMap> {
     if (_markers[markerId]?.onTap != null) {
       _markers[markerId].onTap();
     }
+  }
+
+  void onSnapshotReady(String filePath) {
+    assert(filePath != null);
+    widget.onSnapshotReady(filePath);
   }
 
   void onPolygonTap(String polygonIdParam) {
