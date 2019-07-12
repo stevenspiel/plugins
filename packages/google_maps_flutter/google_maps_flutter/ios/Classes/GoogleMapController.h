@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setScrollGesturesEnabled:(BOOL)enabled;
 - (void)setTiltGesturesEnabled:(BOOL)enabled;
 - (void)setTrackCameraPosition:(BOOL)enabled;
+- (void)takeSnapshot:(NSString*)filePath;
 - (void)setZoomGesturesEnabled:(BOOL)enabled;
 - (void)setMyLocationEnabled:(BOOL)enabled;
 - (void)setMyLocationButtonEnabled:(BOOL)enabled;
