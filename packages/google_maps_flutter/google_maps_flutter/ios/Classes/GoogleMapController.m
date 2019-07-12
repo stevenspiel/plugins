@@ -14,6 +14,7 @@ static CGPoint ToCGPoint(NSDictionary* json);
 static GMSCameraPosition* ToOptionalCameraPosition(NSDictionary* json);
 static GMSCoordinateBounds* ToOptionalBounds(NSArray* json);
 static GMSCameraUpdate* ToCameraUpdate(NSArray* data);
+static GMSPath* toPath(id json);
 static NSDictionary* GMSCoordinateBoundsToJson(GMSCoordinateBounds* bounds);
 static void InterpretMapOptions(NSDictionary* data, id<FLTGoogleMapOptionsSink> sink);
 static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toDouble:data]; }
@@ -341,6 +342,9 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
     } else {
       result(@[ @(NO), error ]);
     }
+  } else if ([call.method isEqualToString:@"map#computeAreaInMeters"]) {
+    NSDecimalNumber* area = [self computeAreaInMeters:toPath(call.arguments[@"points"])];
+    result(area);
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -370,6 +374,11 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
   } else {
     return nil;
   }
+}
+
+- (NSDecimalNumber*)computeAreaInMeters:(GMSPath*)path {
+  double dbl = GMSGeometryArea(path);
+  return [[NSDecimalNumber alloc] initWithDouble: dbl];
 }
 
 #pragma mark - FLTGoogleMapOptionsSink methods
@@ -548,6 +557,16 @@ static CLLocationCoordinate2D ToLocation(NSArray* data) {
 static int ToInt(NSNumber* data) { return [FLTGoogleMapJsonConversions toInt:data]; }
 
 static BOOL ToBool(NSNumber* data) { return [FLTGoogleMapJsonConversions toBool:data]; }
+
+static GMSPath* toPath(id json) {
+  NSArray* data = json;
+  GMSMutablePath* path = [GMSMutablePath path];
+  for (id object in data) {
+    NSArray* d = object;
+      [path addCoordinate:CLLocationCoordinate2DMake(ToDouble(d[0]), ToDouble(d[1]))];
+  }
+  return path;
+}
 
 static CGPoint ToPoint(NSArray* data) { return [FLTGoogleMapJsonConversions toPoint:data]; }
 

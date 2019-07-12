@@ -41,8 +41,7 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
-import io.flutter.plugin.common.BinaryMessenger;
+import com.google.maps.android.SphericalUtil;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -360,6 +359,13 @@ final class GoogleMapController
           Object circleIdsToRemove = call.argument("circleIdsToRemove");
           circlesController.removeCircles((List<Object>) circleIdsToRemove);
           result.success(null);
+          break;
+        }
+      case "map#computeAreaInMeters":
+        {
+          final List<LatLng> points = Convert.extractPointsFromArguments(call.argument("options"));
+          final Double area = SphericalUtil.computeArea(points);
+          result.success(area);
           break;
         }
       case "map#isCompassEnabled":
