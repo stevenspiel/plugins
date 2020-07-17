@@ -159,9 +159,6 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
   } else if ([call.method isEqualToString:@"camera#move"]) {
     [self moveWithCameraUpdate:ToCameraUpdate(call.arguments[@"cameraUpdate"])];
     result(nil);
-  } else if ([call.method isEqualToString:@"map#takeSnapshot"]) {
-    [self takeSnapshot:call.arguments[@"filePath"]];
-    result(nil);
   } else if ([call.method isEqualToString:@"map#update"]) {
     InterpretMapOptions(call.arguments[@"options"], self);
     result(PositionToJson([self cameraPosition]));
@@ -385,19 +382,6 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
   return [[NSDecimalNumber alloc] initWithDouble: dbl];
 }
 
-- (void)takeSnapshot:(NSString*)filePath {
-  UIGraphicsBeginImageContextWithOptions(_mapView.bounds.size, YES, 0);
-  [_mapView drawViewHierarchyInRect:_mapView.bounds afterScreenUpdates:YES];
-  UIImage *snapshot = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-
-  // write to file
-  [UIImagePNGRepresentation(snapshot) writeToFile:filePath atomically:YES];
-
-  // invoke callback
-  [_channel invokeMethod:@"map#onSnapshotReady" arguments:@{@"filePath" : filePath}];
-}
-
 #pragma mark - FLTGoogleMapOptionsSink methods
 
 - (void)setCamera:(GMSCameraPosition*)camera {
@@ -489,10 +473,6 @@ static double ToDouble(NSNumber* data) { return [FLTGoogleMapJsonConversions toD
   if (_trackCameraPosition) {
     [_channel invokeMethod:@"camera#onMove" arguments:@{@"position" : PositionToJson(position)}];
   }
-}
-
-- (void)mapViewSnapshotReady:(GMSMapView *)mapView{
-  [_channel invokeMethod:@"map#onLoaded" arguments:@{}];
 }
 
 - (void)mapView:(GMSMapView*)mapView idleAtCameraPosition:(GMSCameraPosition*)position {

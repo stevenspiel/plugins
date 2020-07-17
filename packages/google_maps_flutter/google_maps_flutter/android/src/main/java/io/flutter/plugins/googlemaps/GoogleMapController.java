@@ -372,13 +372,6 @@ final class GoogleMapController
           result.success(area);
           break;
         }
-      case "map#takeSnapshot":
-        {
-          final String filePath = call.argument("filePath");
-          takeSnapShot(filePath);
-          result.success(null);
-          break;
-        }
       case "map#isCompassEnabled":
         {
           result.success(googleMap.getUiSettings().isCompassEnabled());
@@ -551,47 +544,6 @@ final class GoogleMapController
   @Override
   public void onCircleClick(Circle circle) {
     circlesController.onCircleTap(circle.getId());
-  }
-
-  public void takeSnapShot(String filePath) {
-    final String path = filePath;
-
-    GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
-      Bitmap bitmap;
-
-      @Override
-      public void onSnapshotReady(Bitmap snapshot) {
-        bitmap = snapshot;
-        String returnPath;
-
-        try {
-          File file = new File(path);
-          FileOutputStream fout = new FileOutputStream(file);
-
-          // Write the string to the file
-          bitmap.compress(Bitmap.CompressFormat.PNG, 90, fout);
-          fout.flush();
-          fout.close();
-          returnPath = path;
-        } catch (FileNotFoundException e) {
-          // TODO Auto-generated catch block
-          Log.d("ImageCapture", "FileNotFoundException");
-          Log.d("ImageCapture", e.getMessage());
-          returnPath = "";
-        } catch (IOException e) {
-          // TODO Auto-generated catch block
-          Log.d("ImageCapture", "IOException");
-          Log.d("ImageCapture", e.getMessage());
-          returnPath = "";
-        }
-
-        final Map<String, Object> arguments = new HashMap<>(2);
-        arguments.put("filePath", returnPath);
-        methodChannel.invokeMethod("map#onSnapshotReady", arguments);
-      }
-    };
-
-    googleMap.snapshot(callback);
   }
 
   @Override

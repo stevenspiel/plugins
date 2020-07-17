@@ -39,12 +39,6 @@ class GoogleMapController {
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
-      case 'map#onSnapshotReady':
-        final String filePath = call.arguments['filePath'];
-        if (_googleMapState.onSnapshotReady != null) {
-          _googleMapState.onSnapshotReady(filePath);
-        }
-        break;
       case 'map#onLoaded':
         // sometimes it hasn't truly loaded yet loading. Give it a second.
         await Future<void>.delayed(const Duration(seconds: 1), () => null);
