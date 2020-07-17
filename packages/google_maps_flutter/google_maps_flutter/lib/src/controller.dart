@@ -176,7 +176,7 @@ class GoogleMapController {
       'map#computeAreaInMeters',
       <String, dynamic>{
         'options': <String, dynamic>{
-          'points': (points ?? <LatLng>[]).map<dynamic>((LatLng point) => point._toJson()).toList(),
+          'points': (points ?? <LatLng>[]).map<dynamic>((LatLng point) => point.toJson()).toList(),
         },
       },
     );

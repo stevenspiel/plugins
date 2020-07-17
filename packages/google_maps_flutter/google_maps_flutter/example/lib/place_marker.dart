@@ -116,7 +116,7 @@ class PlaceMarkerBodyState extends State<PlaceMarkerBody> {
       onTap: () {
         _onMarkerTapped(markerId);
       },
-      onDragEnd: (LatLng position) {
+      onDragEnd: (Marker marker, LatLng position) {
         _onMarkerDragEnd(markerId, position);
       },
     );

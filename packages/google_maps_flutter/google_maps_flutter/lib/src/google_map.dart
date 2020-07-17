@@ -321,33 +321,29 @@ class _GoogleMapState extends State<GoogleMap> {
     }
   }
 
-  void onMarkerDragStart(String markerIdParam, LatLng position) {
-    assert(markerIdParam != null);
-    final MarkerId markerId = MarkerId(markerIdParam);
+  void onMarkerDragStart(MarkerId markerId, LatLng position) {
+    assert(markerId != null);
     if (_markers[markerId]?.onDragStart != null) {
       _markers[markerId].onDragStart(_markers[markerId], position);
     }
   }
 
-  void onMarkerDrag(String markerIdParam, LatLng position) {
-    assert(markerIdParam != null);
-    final MarkerId markerId = MarkerId(markerIdParam);
+  void onMarkerDrag(MarkerId markerId, LatLng position) {
+    assert(markerId != null);
     if (_markers[markerId]?.onDrag != null) {
       _markers[markerId].onDrag(_markers[markerId], position);
     }
   }
 
-  void onMarkerDragEnd(String markerIdParam, LatLng position) {
-    assert(markerIdParam != null);
-    final MarkerId markerId = MarkerId(markerIdParam);
+  void onMarkerDragEnd(MarkerId markerId, LatLng position) {
+    assert(markerId != null);
     if (_markers[markerId]?.onDragEnd != null) {
       _markers[markerId].onDragEnd(_markers[markerId], position);
     }
   }
 
-  void onPolygonTap(String polygonIdParam) {
-    assert(polygonIdParam != null);
-    final PolygonId polygonId = PolygonId(polygonIdParam);
+  void onPolygonTap(PolygonId polygonId) {
+    assert(polygonId != null);
     _polygons[polygonId].onTap();
   }
 
