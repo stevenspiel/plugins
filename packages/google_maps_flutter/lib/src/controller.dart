@@ -74,7 +74,7 @@ class GoogleMapController {
         break;
       case 'marker#onDragStart':
         _googleMapState.onMarkerDragStart(call.arguments['markerId'],
-            LatLng._fromJson(call.arguments['position']));
+          LatLng._fromJson(call.arguments['position']));
         break;
       case 'marker#onDrag':
         _googleMapState.onMarkerDrag(call.arguments['markerId'],

@@ -102,6 +102,26 @@ class InfoWindowTapEvent extends MapEvent<MarkerId> {
   InfoWindowTapEvent(int mapId, MarkerId markerId) : super(mapId, markerId);
 }
 
+/// An event fired when a [Marker] starts dragging to a new [LatLng].
+class MarkerDragStartEvent extends _PositionedMapEvent<MarkerId> {
+  /// Build a MarkerDragStart Event triggered from the map represented by `mapId`.
+  ///
+  /// The `position` on this event is the [LatLng] on which the Marker was dropped.
+  /// The `value` of this event is a [MarkerId] object that represents the moved Marker.
+  MarkerDragStartEvent(int mapId, LatLng position, MarkerId markerId)
+      : super(mapId, position, markerId);
+}
+
+/// An event fired when a [Marker] is being dragged to a new [LatLng].
+class MarkerDragEvent extends _PositionedMapEvent<MarkerId> {
+  /// Build a MarkerDrag Event triggered from the map represented by `mapId`.
+  ///
+  /// The `position` on this event is the [LatLng] on which the Marker was dropped.
+  /// The `value` of this event is a [MarkerId] object that represents the moved Marker.
+  MarkerDragEvent(int mapId, LatLng position, MarkerId markerId)
+      : super(mapId, position, markerId);
+}
+
 /// An event fired when a [Marker] is dragged to a new [LatLng].
 class MarkerDragEndEvent extends _PositionedMapEvent<MarkerId> {
   /// Build a MarkerDragEnd Event triggered from the map represented by `mapId`.
